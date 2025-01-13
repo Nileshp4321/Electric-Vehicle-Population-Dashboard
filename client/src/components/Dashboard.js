@@ -1,5 +1,4 @@
-// components/Dashboard.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Chart from "chart.js/auto";
 import DataTable from "react-data-table-component";
@@ -7,6 +6,7 @@ import DataTable from "react-data-table-component";
 function Dashboard() {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const chartRef = useRef(null);
 
   useEffect(() => {
     axios
@@ -14,38 +14,39 @@ function Dashboard() {
       .then((response) => {
         setData(response.data);
         setLoading(false);
-        renderCharts(response.data);
       })
       .catch((error) => console.error("Error fetching the data:", error));
   }, []);
 
-  const renderCharts = (data) => {
-    const ctx = document.getElementById("myChart").getContext("2d");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: data.map((d) => d["Make"]),
-        datasets: [
-          {
-            label: "Number of Vehicles",
-            data: data.map((d) => parseInt(d["VIN (1-10)"])), // Example using VIN count
-            backgroundColor: "rgba(75, 192, 192, 0.2)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            barThickness: 50, // Sets the fixed thickness of bars
-            maxBarThickness: 100,
-            borderWidth: 1,
-          },
-        ],
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true,
+  useEffect(() => {
+    if (!loading && chartRef.current) {
+      const ctx = chartRef.current.getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: data.map((d) => d["Make"]),
+          datasets: [
+            {
+              label: "Number of Vehicles",
+              data: data.map((d) => parseInt(d["VIN (1-10)"])),
+              backgroundColor: "rgba(75, 192, 192, 0.2)",
+              borderColor: "rgba(75, 192, 192, 1)",
+              barThickness: 50,
+              maxBarThickness: 100,
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
           },
         },
-      },
-    });
-  };
+      });
+    }
+  }, [loading, data]);
 
   return (
     <div className="dashboard">
@@ -53,7 +54,7 @@ function Dashboard() {
         <p>Loading data...</p>
       ) : (
         <>
-          <canvas id="myChart" width="400" height="200"></canvas>
+          <canvas ref={chartRef} width="400" height="200"></canvas>
           <DataTable
             title="Electric Vehicle Data"
             columns={[
