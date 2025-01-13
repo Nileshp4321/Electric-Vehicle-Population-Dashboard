@@ -10,7 +10,7 @@ function Dashboard() {
 
   useEffect(() => {
     axios
-      .get("https://electric-vehicle-population-dashboard-backend-yvht-gvriaybi0.vercel.app/api/data")
+      .get("https://electric-vehicle-population-dashboard-backend-yvht.vercel.app/api/data")
       .then((response) => {
         setData(response.data);
         setLoading(false);
